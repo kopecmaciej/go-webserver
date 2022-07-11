@@ -1,0 +1,45 @@
+version: "3.8"
+  
+services:
+  webserver:
+    environment:
+      DATABASE_URL: "postgresql://postgres:password@postgres:5432/web-app?sslmode=disable"
+    image: go-webserver
+    restart: unless-stopped
+    ports:
+      - 4000:4000
+    depends_on:
+      - "postgres"
+
+  postgres:
+    container_name: pg
+    image: postgres
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=web-app
+    expose: 
+      - 5432
+    volumes: 
+      - db:/var/lib/postgresql/data
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+       - pgadmin:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    restart: unless-stopped
+    depends_on:
+      - "postgres"
+
+volumes:
+  db:
+  pgadmin:
+

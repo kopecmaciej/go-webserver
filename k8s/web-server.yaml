@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: go-webserver-deployment
+  labels:
+    app: go-webserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-webserver
+  template:
+    metadata:
+      labels:
+        app: go-webserver
+    spec:
+      containers:
+        - name: cieju
+          image: cieju/for-kube:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4000
+      imagePullSecrets:
+        - name: myregistry
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: go-web-service
+spec:
+  selector:
+    app: go-webserver 
+  ports:
+    - protocol: TCP
+      port: 4000 
+      targetPort: 4000
