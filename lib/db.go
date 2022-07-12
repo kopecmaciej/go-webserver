@@ -13,6 +13,10 @@ var dns = os.Getenv("DATABASE_URL")
 var DB *gorm.DB
 
 func Open() *gorm.DB {
+	if len(dns) == 0 {
+		dns = "postgresql://postgres:password@localhost:5432/web-app?sslmode=disable"
+	}
+
 	db, err := gorm.Open(postgres.Open(dns), &gorm.Config{})
 	if err != nil {
 		panic(err)

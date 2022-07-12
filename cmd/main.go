@@ -19,7 +19,7 @@ func main() {
 
 	routes.UserRoutes(router)
 
-	handler := cors.Default().Handler(router)
+	handler := cors.AllowAll().Handler(router)
 
 	fmt.Println("Server listen on port 4000")
 	panic(http.ListenAndServe(":4000", handler))
