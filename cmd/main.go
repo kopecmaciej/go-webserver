@@ -14,11 +14,10 @@ import (
 func main() {
 	lib.Open()
 	lib.AutoMigrate(&models.User{})
+  lib.InitRedis()
 
 	router := mux.NewRouter()
-
 	routes.UserRoutes(router)
-
 	handler := cors.AllowAll().Handler(router)
 
 	fmt.Println("Server listen on port 4000")
