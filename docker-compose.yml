@@ -1,16 +1,6 @@
 version: "3.8"
-  
-services:
-  webserver:
-    environment:
-      DATABASE_URL: "postgresql://postgres:password@postgres:5432/web-app?sslmode=disable"
-    image: go-webserver
-    restart: unless-stopped
-    ports:
-      - 4000:4000
-    depends_on:
-      - "postgres"
 
+services:
   postgres:
     container_name: pg
     image: postgres
@@ -19,12 +9,22 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=web-app
-    expose: 
-      - 5432
-    volumes: 
+    ports:
+      - 5432:5432
+    volumes:
       - db:/var/lib/postgresql/data
+
+  redis: 
+    image: redis
+    command: redis-server --requirepass password
+    ports: 
+      - 6379:6379
+    volumes: 
+      - redis_db:/var/lib/redis
+      - redis_conf:/usr/local/etc/redis/redis.conf
 
 volumes:
   db:
   pgadmin:
-
+  redis_db:
+  redis_conf:

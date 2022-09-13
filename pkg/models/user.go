@@ -34,10 +34,10 @@ func (u *NewUser) CreateUser() (User, error) {
 	return user, nil
 }
 
-func (u *User) GetUser(Id int) (User, error) {
+func (u *User) GetUser() (User, error) {
 	var user User
 	db := lib.GetDB()
-	if result := db.First(&user, Id); result.Error != nil {
+	if result := db.First(&user, u); result.Error != nil {
 		return user, result.Error
 	}
 	return user, nil

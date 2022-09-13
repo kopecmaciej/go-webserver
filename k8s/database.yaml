@@ -11,4 +11,20 @@ data:
 
 ---
 
+apiVersion: v1
+kind: PersistentVolume
+metadata: 
+  name: postgres-pv-volume
+  labels: 
+    app: web-server-postgres
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes: 
+    - ReadWWriteMany
+  hostPath:
+    path: "/mnt/data"
+  persistentVolumeReclaimPolicy: Retain
+
 

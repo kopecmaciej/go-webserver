@@ -1,20 +1,23 @@
 package middleware
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+	"strings"
+)
 
-type authMiddleware struct {
-	token string
-}
-
-func (auth *authMiddleware) findToken() {
-}
-
-func (auth *authMiddleware) AuthMiddleware(next http.Handler) http.Handler {
+func Auth(HandlerFunc http.HandlerFunc) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if _, ok := r.Header["token"]; !ok {
+		bearer := r.Header.Get("Authorization")
+		if len(bearer) < 1 {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		next.ServeHTTP(w, r)
+		split := strings.Split(bearer, "Bearer ")
+    token := split[1]
+
+		fmt.Println(token)
+
+		HandlerFunc.ServeHTTP(w, r)
 	})
 }

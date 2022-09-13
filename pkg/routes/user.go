@@ -3,6 +3,7 @@ package routes
 import (
 	"encoding/json"
 	"fmt"
+	"go-web-server/pkg/middleware"
 	"go-web-server/pkg/models"
 	"net/http"
 	"strconv"
@@ -11,49 +12,48 @@ import (
 )
 
 var UserRoutes = func(router *mux.Router) {
-	router.HandleFunc("/user/{id}", GetUser).Methods("GET")
-	router.HandleFunc("/user", GetAllUsers).Methods("GET")
+	router.HandleFunc("/user/{id}", GetUserById).Methods("GET")
+	router.HandleFunc("/user", middleware.Auth(GetAllUsers)).Methods("GET")
 	router.HandleFunc("/user", CreateUser).Methods("POST")
 	router.HandleFunc("/user/{id}", DeleteUser).Methods("DELETE")
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request) {
 	newUser := models.NewUser{}
-	r.Body = http.MaxBytesReader(w, r.Body, 524228)
+	var maxBytesPerBody int64 = 524228
+	r.Body = http.MaxBytesReader(w, r.Body, maxBytesPerBody)
 	dec := json.NewDecoder(r.Body)
 	dec.DisallowUnknownFields()
 	err := dec.Decode(&newUser)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-  user, err := newUser.CreateUser()
+	defer r.Body.Close()
+	user, err := newUser.CreateUser()
 	if err != nil {
 		http.Error(w, "Error while saving user to database", http.StatusInternalServerError)
 		return
 	}
-
-	jsonUsers, _ := json.Marshal(user)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonUsers)
+	json.NewEncoder(w).Encode(user)
 }
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	user := models.User{}
+func GetUserById(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	stringId := vars["id"]
 	id, err := strconv.Atoi(stringId)
 	if err != nil {
 		fmt.Println(err)
 	}
-	u, err := user.GetUser(id)
+	user := models.User{Id: uint(id)}
+	u, err := user.GetUser()
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
+    return
 	}
-	jsonUser, _ := json.Marshal(u)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonUser)
+	json.NewEncoder(w).Encode(u)
 }
 
 func GetAllUsers(w http.ResponseWriter, r *http.Request) {
@@ -63,9 +63,8 @@ func GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	jsonUsers, _ := json.Marshal(users)
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(jsonUsers)
+	json.NewEncoder(w).Encode(users)
 }
 
 func DeleteUser(w http.ResponseWriter, r *http.Request) {

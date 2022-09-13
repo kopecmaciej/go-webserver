@@ -1,21 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata: 
-  name: go-webserver-deployment
+  name: go-web-deployment
+  namespace: master
   labels:
-    app: go-webserver
+    app: go-web-server
+    env: development
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: go-webserver
+      app: go
+      name: web-server
   template:
     metadata:
       labels:
-        app: go-webserver
+        app: go
+        name: web-server
     spec:
       containers:
-        - name: cieju
+        - name: go-web-server
           image: cieju/for-kube:latest
           imagePullPolicy: Always
           ports:
