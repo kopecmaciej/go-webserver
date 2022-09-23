@@ -29,8 +29,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "", http.StatusUnauthorized)
 		return
 	}
-	var token models.AuthToken
-	token = auth.CreateSession(user)
+	token := auth.CreateSession(user.Id)
 	fmt.Println(token)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(token)

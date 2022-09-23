@@ -5,14 +5,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
+	"go-web-server/config"
 	"time"
 
 	"github.com/go-redis/redis/v8"
 )
 
-var ctx = context.Background()
-var redisClient *redis.Client
+var (
+	ctx         = context.Background()
+	redisClient *redis.Client
+	address     = &config.GlobalConfig.Cache.Url
+	password    = &config.GlobalConfig.Cache.Password
+)
 
 type Redis struct {
 	Client *redis.Client
@@ -23,20 +27,13 @@ type RedisCache struct {
 }
 
 func InitRedis() {
-	address := os.Getenv("REDIS_URL")
-	password := os.Getenv("REDIS_PASSWORD")
-	db := 0
-	if len(address) == 0 {
-		address = "localhost:6379"
+	if len(*password) == 0 {
+		*password = "password"
 	}
-	if len(password) == 0 {
-		password = "password"
-	}
-
 	redisClient = redis.NewClient(&redis.Options{
-		Addr:     address,
-		Password: password,
-		DB:       db,
+		Addr:     *address,
+		Password: *password,
+		DB:       0,
 	})
 	if err := redisClient.Ping(ctx).Err(); err != nil {
 		panic(err)

@@ -2,9 +2,10 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: postgres-config
+  namespace: master
   labels:
-    app: postgres
-data: 
+    app: webserver
+data:
   POSTGRES_DB: web-server
   POSTGRES_USER: postgres
   POSTGRES_PASSWORD: password
@@ -12,19 +13,79 @@ data:
 ---
 
 apiVersion: v1
-kind: PersistentVolume
-metadata: 
-  name: postgres-pv-volume
-  labels: 
-    app: web-server-postgres
+kind: Service
+metadata:
+  namespace: master
+  name: postrgres-service
+  labels:
+    app: webserver
 spec:
-  storageClassName: manual
+  selector:
+    app: postgres
+  clusterIP: None
+  ports:
+  - name: postgres 
+    port: 5432
+    targetPort: 5432
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postrgres-sts
+  namespace: master
+  labels:
+    app: webserver
+spec:
+  selector:
+    matchLabels:
+      app: webserver
+  serviceName: "postgres"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: webserver
+    spec:
+       terminationGracePeriodSeconds: 10
+       containers:
+       - name: postgres
+         image:  postgres:10.5
+         imagePullPolicy: "IfNotPresent"
+         env:
+          - name: POSTGRES_USER
+            value: "postgres"
+
+      
+
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-volume-5g
+spec:
+  storageClassName: local-path
   capacity:
     storage: 5Gi
-  accessModes: 
-    - ReadWWriteMany
+  accessModes:
+    - ReadWriteMany
   hostPath:
-    path: "/mnt/data"
-  persistentVolumeReclaimPolicy: Retain
-
-
+    path: /mnt/data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pv-claim
+  namespace: master
+  labels: 
+    app: webserver
+spec:
+  storageClassName: local-path
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"go-web-server/lib"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -76,7 +77,7 @@ func (auth *AuthToken) GenereteToken() string {
 func genSessionId(n int) string {
 	b := make([]byte, n)
 	if _, err := io.ReadFull(rand.Reader, b); err != nil {
-		return ""
+		log.Fatal(err)
 	}
 	return base64.URLEncoding.EncodeToString(b)
 }
